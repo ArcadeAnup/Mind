@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindJourney - Your Mental Health Companion</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="auth-container">
+                <h2 id="authTitle">Welcome to MindJourney</h2>
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">Login</button>
+                    <button class="tab-btn" data-tab="register">Register</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <input type="email" id="loginEmail" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="loginPassword" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                    <div class="divider">or</div>
+                    <button type="button" class="btn-google" id="googleLogin">
+                        <i class="fab fa-google"></i> Continue with Google
+                    </button>
+                    <button type="button" class="btn-anonymous" id="anonymousLogin">
+                        Continue Anonymously
+                    </button>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <input type="text" id="registerName" placeholder="Name (optional)">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="registerEmail" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="registerPassword" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                    <div class="divider">or</div>
+                    <button type="button" class="btn-google" id="googleRegister">
+                        <i class="fab fa-google"></i> Sign up with Google
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="app-container" style="display: none;">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo">M</div>
+                <h1>MindJourney</h1>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i> Dashboard
+                </button>
+                <button class="nav-item" data-page="journal">
+                    <i class="fas fa-pen"></i> Journal
+                </button>
+                <button class="nav-item" data-page="insights">
+                    <i class="fas fa-chart-line"></i> Insights
+                </button>
+                <button class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+                <button class="nav-item" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="nav-item logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+        </nav>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page active">
+            <div class="dashboard-container">
+                <div class="welcome-section">
+                    <h2 id="welcomeMessage">Good Morning, there!</h2>
+                    <p class="welcome-subtitle" id="dailyQuote">"Progress, not perfection." - Bill Phillips</p>
+                    
+                    <div class="streak-display">
+                        <span class="streak-icon">🔥</span>
+                        <span class="streak-text" id="currentStreak">1 Day</span>
+                        <span class="streak-label">Current Streak</span>
+                    </div>
+                </div>
+
+                <div class="mood-week-container">
+                    <h3>This Week's Mood</h3>
+                    <div class="mood-week-grid" id="moodWeekGrid">
+                        <div class="mood-day">
+                            <div class="mood-day-label">Mon</div>
+                            <div class="mood-day-indicator empty">?</div>
+                        </div>
+                        <div class="mood-day">
+                            <div class="mood-day-label">Tue</div>
+                            <div class="mood-day-indicator empty">?</div>
+                        </div>
+                        <div class="mood-day">
+                            <div class="mood-day-label">Wed</div>
+                            <div class="mood-day-indicator empty">?</div>
+                        </div>
+                        <div class="mood-day">
+                            <div class="mood-day-label">Thu</div>
+                            <div class="mood-day-indicator empty">?</div>
+                        </div>
+                        <div class="mood-day">
+                            <div class="mood-day-label">Fri</div>
+                            <div class="mood-day-indicator empty">?</div>
+                        </div>
+                        <div class="mood-day">
+                            <div class="mood-day-label">Sat</div>
+                            <div class="mood-day-indicator has-mood">😊</div>
+                        </div>
+                        <div class="mood-day">
+                            <div class="mood-day-label">Sun</div>
+                            <div class="mood-day-indicator empty">?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-cards">
+                    <div class="action-card" id="writeJournalBtn">
+                        <div class="action-card-icon journal">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                        <h4>Write Journal Entry</h4>
+                        <p>Express your thoughts and feelings</p>
+                    </div>
+                    
+                    <div class="action-card" id="quickMoodBtn">
+                        <div class="action-card-icon mood">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4>Quick Mood Check</h4>
+                        <p>How are you feeling today?</p>
+                    </div>
+                    
+                    <div class="action-card" id="viewInsightsBtn">
+                        <div class="action-card-icon insights">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>View My Insights</h4>
+                        <p>Track your progress and patterns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Selection Page -->
+        <div id="templatePage" class="page">
+            <div class="template-container">
+                <div class="template-header">
+                    <button class="back-btn" onclick="app.navigateToPage('dashboard')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2>Choose a Template</h2>
+                </div>
+                
+                <div class="template-intro">
+                    <h3>How would you like to journal today?</h3>
+                    <p>Choose a template to guide your writing, or start with free writing</p>
+                </div>
+                
+                <div class="template-grid">
+                    <div class="template-card" data-template="daily">
+                        <div class="template-icon daily-icon">🌅</div>
+                        <h4>Daily Reflection</h4>
+                        <p>How was your day? What went well? What was challenging? What did you learn about yourself today?</p>
+                    </div>
+                    
+                    <div class="template-card" data-template="anxiety">
+                        <div class="template-icon anxiety-icon">🧠</div>
+                        <h4>Anxiety Processing</h4>
+                        <p>What am I worried about right now? What parts of this can I control? What breathing exercises can I try?</p>
+                    </div>
+                    
+                    <div class="template-card" data-template="gratitude">
+                        <div class="template-icon gratitude-icon">⭐</div>
+                        <h4>Gratitude Practice</h4>
+                        <p>What are three things I'm grateful for today? Who in my life has made a positive impact recently? What moments brought me joy?</p>
+                    </div>
+                    
+                    <div class="template-card" data-template="work">
+                        <div class="template-icon work-icon">💼</div>
+                        <h4>Work Stress</h4>
+                        <p>What work challenges did I face today? How did I handle them? What strategies worked well? What support do I need?</p>
+                    </div>
+                    
+                    <div class="template-card" data-template="goals">
+                        <div class="template-icon goals-icon">🎯</div>
+                        <h4>Goal Setting</h4>
+                        <p>What do I want to achieve? What steps can I take to get there? What obstacles might I face and how can I overcome them?</p>
+                    </div>
+                    
+                    <div class="template-card" data-template="">
+                        <div class="template-icon free-icon">✏️</div>
+                        <h4>Free Writing</h4>
+                        <p>Write whatever comes to mind. Let your thoughts flow freely without judgment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Journal Page -->
+        <div id="journalPage" class="page">
+            <div class="journal-container">
+                <div class="journal-header">
+                    <button class="back-btn" onclick="app.navigateToPage('templatePage')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 id="journalTitle">Journal Entry</h2>
+                    <div class="journal-date" id="journalDate"></div>
+                </div>
+
+                <div class="journal-editor">
+                    <div id="templatePrompt" class="template-prompt"></div>
+                    <textarea id="journalText" placeholder="How are you feeling today? What's on your mind?"></textarea>
+                    <div class="editor-footer">
+                        <span id="charCounter">0 characters</span>
+                        <div class="editor-actions">
+                            <button id="attachImageBtn" class="btn-secondary">
+                                <i class="fas fa-image"></i> Add Image
+                            </button>
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                            <button id="saveJournalBtn" class="btn-primary">
+                                <i class="fas fa-save"></i> Save Entry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="imagePreview" class="image-preview"></div>
+
+                <div id="aiResponse" class="ai-response" style="display: none;">
+                    <h4>AI Insights</h4>
+                    <div id="aiResponseText"></div>
+                    <div id="personalizedAffirmation" class="affirmation"></div>
+                </div>
+
+                <div id="recommendations" class="recommendations" style="display: none;">
+                    <h4>Recommendations for You</h4>
+                    <div class="recommendation-tabs">
+                        <button class="rec-tab active" data-tab="movies">Movies</button>
+                        <button class="rec-tab" data-tab="music">Music</button>
+                        <button class="rec-tab" data-tab="quotes">Quotes</button>
+                    </div>
+                    <div id="movieRecs" class="rec-content active"></div>
+                    <div id="musicRecs" class="rec-content"></div>
+                    <div id="quoteRecs" class="rec-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Mood Check Modal -->
+        <div id="moodModal" class="modal">
+            <div class="modal-content mood-modal">
+                <span class="close">&times;</span>
+                <h3>How are you feeling right now?</h3>
+                <div class="mood-options">
+                    <button class="mood-btn" data-mood="happy">😊<span>Happy</span></button>
+                    <button class="mood-btn" data-mood="neutral">😐<span>Neutral</span></button>
+                    <button class="mood-btn" data-mood="sad">🙁<span>Sad</span></button>
+                    <button class="mood-btn" data-mood="anxious">😰<span>Anxious</span></button>
+                    <button class="mood-btn" data-mood="angry">😤<span>Angry</span></button>
+                    <button class="mood-btn" data-mood="tired">😴<span>Tired</span></button>
+                </div>
+                <div class="context-tags">
+                    <p>What's this about? (optional)</p>
+                    <div class="tag-options">
+                        <button class="tag-btn" data-tag="work">Work</button>
+                        <button class="tag-btn" data-tag="family">Family</button>
+                        <button class="tag-btn" data-tag="health">Health</button>
+                        <button class="tag-btn" data-tag="relationships">Relationships</button>
+                        <button class="tag-btn" data-tag="personal">Personal</button>
+                    </div>
+                </div>
+                <button id="submitMoodBtn" class="btn-primary">Submit</button>
+            </div>
+        </div>
+
+        <!-- Insights Page -->
+        <div id="insightsPage" class="page">
+            <div class="insights-container">
+                <div class="insights-header">
+                    <button class="back-btn" onclick="app.navigateToPage('dashboard')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2>Your Insights</h2>
+                </div>
+                
+                <div class="insights-tabs">
+                    <button class="insights-tab active" data-tab="overview">Overview</button>
+                    <button class="insights-tab" data-tab="patterns">Mood Patterns</button>
+                    <button class="insights-tab" data-tab="history">Journal History</button>
+                    <button class="insights-tab" data-tab="foryou">For You</button>
+                </div>
+                
+                <!-- Overview Tab -->
+                <div id="overviewTab" class="insights-tab-content active">
+                    <div class="insights-stats-grid">
+                        <div class="insights-stat-card">
+                            <div class="stat-icon streak-icon">📈</div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="insightCurrentStreak">1</div>
+                                <div class="stat-label">Current Streak</div>
+                                <div class="stat-subtitle">Keep it going!</div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-stat-card">
+                            <div class="stat-icon entries-icon">📝</div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="insightTotalEntries">1</div>
+                                <div class="stat-label">Total Entries</div>
+                                <div class="stat-subtitle">Journal entries written</div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-stat-card">
+                            <div class="stat-icon mood-icon">💖</div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="insightMoodCheckins">1</div>
+                                <div class="stat-label">Mood Check-ins</div>
+                                <div class="stat-subtitle">Times you checked in</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="common-mood-section">
+                        <h3>Your Most Common Mood</h3>
+                        <div class="common-mood-card">
+                            <div class="mood-emoji">😊</div>
+                            <div class="mood-info">
+                                <div class="mood-name">Happy</div>
+                                <div class="mood-percentage">This was your mood 100% of the time.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mood Patterns Tab -->
+                <div id="patternsTab" class="insights-tab-content">
+                    <div class="insight-card">
+                        <h3>Mood Calendar</h3>
+                        <div id="moodCalendar" class="mood-calendar"></div>
+                    </div>
+                    
+                    <div class="insight-card">
+                        <h3>Weekly Summary</h3>
+                        <div id="weeklySummary" class="weekly-summary"></div>
+                    </div>
+                </div>
+                
+                <!-- Journal History Tab -->
+                <div id="historyTab" class="insights-tab-content">
+                    <div class="insight-card">
+                        <h3>Journal History</h3>
+                        <div id="journalHistory" class="journal-history"></div>
+                    </div>
+                </div>
+                
+                <!-- For You Tab -->
+                <div id="foryouTab" class="insights-tab-content">
+                    <div class="foryou-header">
+                        <h3>Personalized for You</h3>
+                        <p>Content recommendations based on your recent mood patterns</p>
+                    </div>
+                    
+                    <div class="recommendations-grid" id="personalizedRecs">
+                        <!-- Recommendations will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page">
+            <div class="settings-container">
+                <h2>Settings</h2>
+                
+                <div class="settings-section">
+                    <h3>Appearance</h3>
+                    <div class="setting-item">
+                        <label for="themeSelect">Theme:</label>
+                        <select id="themeSelect">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="colorScheme">Color Scheme:</label>
+                        <select id="colorScheme">
+                            <option value="blue">Ocean Blue</option>
+                            <option value="green">Forest Green</option>
+                            <option value="purple">Lavender Purple</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="textSize">Text Size:</label>
+                        <select id="textSize">
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Privacy</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="anonymousMode"> Anonymous Mode
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/journal.js"></script>
+    <script src="js/mood.js"></script>
+    <script src="js/insights.js"></script>
+    <script src="js/recommendations.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
