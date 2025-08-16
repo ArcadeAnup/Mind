@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const firebaseAuth = require('../middleware/firebaseAuth');
 const db = require('../database');
 const { randomUUID } = require('crypto');
 
 // Get all mood entries for a user
-router.get('/', auth, (req, res) => {
-    db.all('SELECT * FROM mood_entries WHERE userId = ? ORDER BY timestamp DESC', [req.user.id], (err, rows) => {
+router.get('/', firebaseAuth, (req, res) => {
+    db.all('SELECT * FROM mood_entries WHERE userId = ? ORDER BY timestamp DESC', [req.user.uid], (err, rows) => {
         if (err) {
             return res.status(500).json({ message: 'Database error', error: err.message });
         }
@@ -15,8 +15,9 @@ router.get('/', auth, (req, res) => {
 });
 
 // Create a new mood entry
-router.post('/', auth, (req, res) => {
+router.post('/', firebaseAuth, (req, res) => {
     const { mood, emoji, tags } = req.body;
+    const userId = req.user.uid;
 
     if (!mood) {
         return res.status(400).json({ message: 'Mood is required' });
@@ -24,7 +25,7 @@ router.post('/', auth, (req, res) => {
 
     const newEntry = {
         id: randomUUID(),
-        userId: req.user.id,
+        userId,
         mood,
         emoji,
         tags: JSON.stringify(tags),

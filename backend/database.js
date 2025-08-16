@@ -17,9 +17,7 @@ function createTables() {
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL,
-            createdAt TEXT NOT NULL,
-            settings TEXT
+            createdAt TEXT NOT NULL
         );
     `;
 
@@ -54,33 +52,15 @@ function createTables() {
         );
     `;
 
-    const journalDraftsTable = `
-        CREATE TABLE IF NOT EXISTS journal_drafts (
-            userId TEXT PRIMARY KEY,
-            text TEXT,
-            template TEXT,
-            timestamp TEXT,
-            imageData TEXT,
-            FOREIGN KEY (userId) REFERENCES users (id)
-        );
-    `;
-
     db.serialize(() => {
         db.run(usersTable, (err) => {
             if (err) console.error("Error creating users table", err.message);
-            else console.log("Users table created or already exists.");
         });
         db.run(journalEntriesTable, (err) => {
             if (err) console.error("Error creating journal_entries table", err.message);
-            else console.log("Journal entries table created or already exists.");
         });
         db.run(moodEntriesTable, (err) => {
             if (err) console.error("Error creating mood_entries table", err.message);
-            else console.log("Mood entries table created or already exists.");
-        });
-        db.run(journalDraftsTable, (err) => {
-            if (err) console.error("Error creating journal_drafts table", err.message);
-            else console.log("Journal drafts table created or already exists.");
         });
     });
 }
