@@ -3,14 +3,19 @@ class AuthManager {
     constructor() {
         this.currentUser = null;
         this.isAnonymous = false;
+        this.token = null;
+        this.apiUrl = 'http://localhost:3000/api'; // Assuming the backend runs on port 3000
         this.init();
     }
 
     init() {
         // Check for existing session
-        const savedUser = localStorage.getItem('mindjourney_user');
-        if (savedUser) {
-            this.currentUser = JSON.parse(savedUser);
+        const token = localStorage.getItem('mindjourney_token');
+        const user = localStorage.getItem('mindjourney_user');
+
+        if (token && user) {
+            this.token = token;
+            this.currentUser = JSON.parse(user);
             this.showApp();
         } else {
             this.showAuthModal();
@@ -42,6 +47,12 @@ class AuthManager {
             welcomeMsg.textContent = `Welcome back, ${this.currentUser.name}!`;
         } else {
             welcomeMsg.textContent = 'Welcome back!';
+        }
+
+        // When app loads, fetch data from backend
+        if (!this.isAnonymous && this.isLoggedIn()) {
+            window.journalManager.loadEntries();
+            window.moodManager.loadMoodHistory();
         }
     }
 
@@ -108,7 +119,7 @@ class AuthManager {
         });
     }
 
-    handleLogin() {
+    async handleLogin() {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
 
@@ -117,21 +128,31 @@ class AuthManager {
             return;
         }
 
-        // Simulate login (in real app, this would be an API call)
-        const savedUsers = JSON.parse(localStorage.getItem('mindjourney_users') || '[]');
-        const user = savedUsers.find(u => u.email === email && u.password === password);
+        try {
+            const response = await fetch(`${this.apiUrl}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-        if (user) {
-            this.currentUser = user;
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+
+            this.currentUser = data.user;
+            this.token = data.token;
             this.saveUserSession();
             this.showApp();
             this.showSuccess('Welcome back!');
-        } else {
-            this.showError('Invalid email or password');
+
+        } catch (error) {
+            this.showError(error.message);
         }
     }
 
-    handleRegister() {
+    async handleRegister() {
         const name = document.getElementById('registerName').value;
         const email = document.getElementById('registerEmail').value;
         const password = document.getElementById('registerPassword').value;
@@ -146,34 +167,28 @@ class AuthManager {
             return;
         }
 
-        // Check if user already exists
-        const savedUsers = JSON.parse(localStorage.getItem('mindjourney_users') || '[]');
-        if (savedUsers.find(u => u.email === email)) {
-            this.showError('User with this email already exists');
-            return;
-        }
+        try {
+            const response = await fetch(`${this.apiUrl}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
 
-        // Create new user
-        const newUser = {
-            id: Date.now().toString(),
-            name: name || 'User',
-            email: email,
-            password: password, // In real app, this would be hashed
-            createdAt: new Date().toISOString(),
-            settings: {
-                theme: 'light',
-                colorScheme: 'blue',
-                textSize: 'medium'
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Registration failed');
             }
-        };
 
-        savedUsers.push(newUser);
-        localStorage.setItem('mindjourney_users', JSON.stringify(savedUsers));
+            this.currentUser = data.user;
+            this.token = data.token;
+            this.saveUserSession();
+            this.showApp();
+            this.showSuccess('Account created successfully!');
 
-        this.currentUser = newUser;
-        this.saveUserSession();
-        this.showApp();
-        this.showSuccess('Account created successfully!');
+        } catch (error) {
+            this.showError(error.message);
+        }
     }
 
     handleGoogleAuth() {
@@ -194,6 +209,7 @@ class AuthManager {
             }
         };
 
+        this.isAnonymous = true; // Treat as anonymous for data handling
         this.currentUser = mockGoogleUser;
         this.saveUserSession();
         this.showApp();
@@ -220,12 +236,19 @@ class AuthManager {
     }
 
     saveUserSession() {
-        localStorage.setItem('mindjourney_user', JSON.stringify(this.currentUser));
+        if (this.isAnonymous) {
+            localStorage.setItem('mindjourney_user', JSON.stringify(this.currentUser));
+        } else {
+            localStorage.setItem('mindjourney_token', this.token);
+            localStorage.setItem('mindjourney_user', JSON.stringify(this.currentUser));
+        }
     }
 
     logout() {
         this.currentUser = null;
+        this.token = null;
         this.isAnonymous = false;
+        localStorage.removeItem('mindjourney_token');
         localStorage.removeItem('mindjourney_user');
         document.getElementById('app').style.display = 'none';
         this.showAuthModal();
@@ -289,8 +312,41 @@ class AuthManager {
         return this.currentUser;
     }
 
+    getToken() {
+        return this.token;
+    }
+
     isLoggedIn() {
-        return !!this.currentUser;
+        return !!this.currentUser && !this.isAnonymous;
+    }
+
+    async fetchWithAuth(url, options = {}) {
+        if (this.isAnonymous) {
+            // For anonymous users, we don't fetch from the backend.
+            // This could be changed to support anonymous cloud storage later.
+            return;
+        }
+
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${this.getToken()}`
+        };
+
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        const response = await fetch(`${this.apiUrl}${url}`, {
+            ...options,
+            headers: headers
+        });
+
+        if (response.status === 401) {
+            this.logout();
+            throw new Error('Session expired. Please log in again.');
+        }
+
+        return response;
     }
 }
 
